@@ -1,9 +1,8 @@
 from datetime import datetime
 from typing import List
 
-from sqlalchemy.orm import Mapped, relationship
-from sqlalchemy.testing.schema import mapped_column
-import Category, Budget
+from sqlalchemy import func
+from sqlalchemy.orm import Mapped, relationship, mapped_column
 
 from Models.ModelBase import ModelBase
 
@@ -13,8 +12,9 @@ class User(ModelBase):
 
 	username: Mapped[str] = mapped_column(unique=True)
 	email: Mapped[str] = mapped_column(unique=True)
-	password_hash: Mapped[int] = mapped_column()
-	created_at: Mapped[datetime] = mapped_column()
+	password_hash: Mapped[str] = mapped_column()
+	created_at: Mapped[datetime] = mapped_column(server_default=func.current_timestamp())
 
-	categories: Mapped[List[Category]] = relationship(back_populates='user')
-	budgets: Mapped[List[Budget]] = relationship(back_populates='user')
+	categories: Mapped[List['Category']] = relationship(back_populates='user')
+	budgets: Mapped[List['Budget']] = relationship(back_populates='user')
+	transactions: Mapped[List['Transaction']] = relationship(back_populates='user')
