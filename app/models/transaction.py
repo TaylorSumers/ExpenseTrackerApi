@@ -4,7 +4,7 @@ from typing import Optional
 from sqlalchemy import ForeignKey, func, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ModelBase import ModelBase
+from model_base import ModelBase
 
 
 class Transaction(ModelBase):

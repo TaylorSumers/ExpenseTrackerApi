@@ -1,5 +1,5 @@
 from sqlalchemy import ForeignKey, UniqueConstraint
-from ModelBase import ModelBase
+from model_base import ModelBase
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 

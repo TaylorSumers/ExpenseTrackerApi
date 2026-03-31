@@ -2,7 +2,7 @@ from typing import Optional, List
 from sqlalchemy import ForeignKey, UniqueConstraint, CheckConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from ModelBase import ModelBase
+from model_base import ModelBase
 
 
 class Сategory(ModelBase):

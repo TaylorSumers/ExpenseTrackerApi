@@ -4,7 +4,7 @@ from typing import List
 from sqlalchemy import func
 from sqlalchemy.orm import Mapped, relationship, mapped_column
 
-from Models.ModelBase import ModelBase
+from models.model_base import ModelBase
 
 
 class User(ModelBase):
