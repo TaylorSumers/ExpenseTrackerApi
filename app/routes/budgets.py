@@ -26,4 +26,4 @@ def create():
 	if not user_id or not category_id or not period or not limit:
 		return {"message": "user_id, category_id, period and limit are required"}, 400
 	result = create_budget(user_id, category_id, period, limit)
-	return result, 200
+	return result, 201

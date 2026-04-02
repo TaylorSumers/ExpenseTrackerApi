@@ -22,4 +22,4 @@ def create():
 	if not user_id or not name:
 		return {"message": "user_id and name are required"}, 400
 	result = create(user_id, name)
-	return result, 200
+	return result, 201
