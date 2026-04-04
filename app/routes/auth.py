@@ -20,9 +20,11 @@ def register():
 
 @auth_bp.post('/login')
 def login():
+
 	data = request.get_json() or {}
 	email = data.get("email")
 	password = data.get("password")
+
 	if not email or not password:
 		return {"message": "email and password are required"}, 400
 
