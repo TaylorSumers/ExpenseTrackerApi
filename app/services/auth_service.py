@@ -1,15 +1,14 @@
 from sqlalchemy import select
-
+from werkzeug.security import generate_password_hash, check_password_hash
 from app.database import session_factory
 from app.models import User
 
 
 async def register_user(username: str, email: str, password: str):
-	password_hash = ''
 	user = User(
 		username=username,
 		email=email,
-		password_hash=password_hash
+		password_hash=generate_password_hash(password)
 	)
 	async with session_factory() as session:
 		session.add(user)
@@ -18,7 +17,9 @@ async def register_user(username: str, email: str, password: str):
 
 async def login_user(email: str, password: str):
 	async with session_factory() as session:
-		password_hash = ''
-		query = select(User).filter_by(email=email, password_hash=password_hash)
+		query = select(User).filter_by(email=email)
 		result = await session.execute(query)
-		return result.scalar()
+		user = result.scalar_one_or_none()
+		if not user or not check_password_hash(user.password_hash, password):
+			raise Exception('Invalid credentials')
+		return user.id
