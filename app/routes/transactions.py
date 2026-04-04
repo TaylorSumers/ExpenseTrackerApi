@@ -17,11 +17,11 @@ async def get():
 async def create():
 	data = request.get_json() or {}
 	user_id = data['user_id']
-	category_id = data['user_id']
-	amount = data['user_id']
-	type = data['user_id']
-	description = data['user_id']
-	executed_at = data['user_id']
+	category_id = data['category_id']
+	amount = data['amount']
+	type = data['type']
+	description = data['description']
+	executed_at = data['executed_at']
 	if not user_id or not amount or not type or not executed_at:
 		return {"message": "user_id, amount, type and executed_at are required"}, 400
 	await create_transaction(user_id, category_id, amount, type, description, executed_at)
