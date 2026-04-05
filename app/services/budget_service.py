@@ -1,17 +1,18 @@
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 
+from app import ConflictError
 from app.database import session_factory
 from app.models import Budget
 
 
-async def get_budgets(user_id: int, period: str):
+async def get_budgets(user_id: int, period: str) -> list[Budget]:
 	async with session_factory() as session:
-		query = select(Budget).filter_by(user_id=user_id, period=period)
-		result = await session.execute(query)
-		return result.scalars().all()
+		budgets = await session.execute(select(Budget).filter_by(user_id=user_id, period=period))
+		return budgets.scalars().all()
 
 
-async def create_budget(user_id: int, category_id: int, period: str, limit: int):
+async def create_budget(user_id: int, category_id: int, period: str, limit: int) -> None:
 	budget = Budget(
 		user_id=user_id,
 		category_id=category_id,
@@ -20,4 +21,8 @@ async def create_budget(user_id: int, category_id: int, period: str, limit: int)
 	)
 	async with session_factory() as session:
 		session.add(budget)
-		await session.commit()
+		try:
+			await session.commit()
+		except IntegrityError:
+			await session.rollback()
+			raise ConflictError('User already has a budget for such period with such category')
