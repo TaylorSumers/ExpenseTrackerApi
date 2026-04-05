@@ -1,5 +1,11 @@
-from flask import Flask, jsonify
+from flask import Flask
+from sqlalchemy.exc import IntegrityError
+from werkzeug.exceptions import HTTPException
+import logging
+
 from app.config import settings
+from app.exceptions import ApiError, ConflictError
+from app.responses import error_response
 from app.routes.auth import auth_bp
 from app.routes.budgets import budgets_bp
 from app.routes.categories import categories_bp
@@ -26,10 +32,30 @@ def register_blueprints(app: Flask) -> None:
 
 
 def register_error_handlers(app: Flask) -> None:
-	@app.errorhandler(404)
-	def not_found(_error):
-		return jsonify({'message': 'Not found'}), 404
+	logger = logging.getLogger(__name__)
 
-	@app.errorhandler(500)
-	def internal_error(_error):
-		return jsonify({'message': 'Internal Server Error'}), 500
+	def build_api_error_response(error: ApiError):
+		return error_response(
+			message=error.message,
+			code=error.code,
+			status_code=error.status_code,
+		)
+
+	@app.errorhandler(ApiError)
+	def handle_api_error(error: ApiError):
+		return build_api_error_response(error)
+
+	@app.errorhandler(IntegrityError)
+	def handle_integrity_error(_error: IntegrityError):
+		conflict = ConflictError('Resource already exists')
+		return error_response(message=conflict.message, code=conflict.code, status_code=conflict.status_code)
+
+	@app.errorhandler(HTTPException)
+	def handle_http_exception(error: HTTPException):
+		return error_response(message=error.description, code=error.name.lower().replace(' ', '_'), status_code=error.code)
+
+	@app.errorhandler(Exception)
+	def handle_unexpected_error(error: Exception):
+		logger.error('Unexpected error', exc_info=error)
+		return build_api_error_response(ApiError())
+

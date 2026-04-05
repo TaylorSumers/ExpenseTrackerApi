@@ -13,7 +13,7 @@ class ModelBase(DeclarativeBase):
 class Budget(ModelBase):
 	__tablename__ = 'Budgets'
 
-	__table_args__ = (UniqueConstraint('user_id', 'category_id', 'period', name='ux_budgets_user_category_period'),)
+	__table_args__ = (UniqueConstraint('UserId', 'CategoryId', 'Period', name='ux_budgets_user_category_period'),)
 
 	user_id: Mapped[int] = mapped_column('UserId', ForeignKey('Users.Id'))
 	category_id: Mapped[int] = mapped_column('CategoryId', ForeignKey('Categories.Id'))
@@ -27,7 +27,7 @@ class Budget(ModelBase):
 class Category(ModelBase):
 	__tablename__ = 'Categories'
 	__table_args__ = (
-		UniqueConstraint('user_id', 'name', name='ux_system_category_name'),
+		UniqueConstraint('UserId', 'Name', name='ux_system_category_name'),
 		CheckConstraint('(IsSystem = 1 AND UserId IS NULL) OR (IsSystem = 0 AND UserId IS NOT NULL)'),
 	)
 

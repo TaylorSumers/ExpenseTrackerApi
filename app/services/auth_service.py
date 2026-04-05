@@ -1,25 +1,36 @@
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
+
+from app.exceptions import ConflictError, UnauthorizedError
 from app.database import session_factory
 from app.models import User
 
 
-async def register_user(username: str, email: str, password: str):
+async def register_user(username: str, email: str, password: str) -> User:
 	user = User(
 		username=username,
 		email=email,
 		password_hash=generate_password_hash(password)
 	)
+
 	async with session_factory() as session:
 		session.add(user)
-		await session.commit()
+		try:
+			await session.commit()
+		except IntegrityError:
+			await session.rollback()
+			raise ConflictError('Username or email already exists')
 
+		await session.refresh(user)
+		return user
 
-async def login_user(email: str, password: str):
+async def login_user(email: str, password: str) -> User:
 	async with session_factory() as session:
-		query = select(User).filter_by(email=email)
-		result = await session.execute(query)
+		result = await session.execute(select(User).filter_by(email=email))
 		user = result.scalar_one_or_none()
+
 		if not user or not check_password_hash(user.password_hash, password):
-			raise Exception('Invalid credentials')
-		return user.id
+			raise UnauthorizedError('Invalid credentials')
+
+		return user
