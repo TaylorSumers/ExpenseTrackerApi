@@ -1,38 +1,30 @@
 from http import HTTPStatus
-from flask import Blueprint, request
+from flask import Blueprint
 
 from app.exceptions import BadRequestError
 from app.responses import success_response
+from app.schemas.categories import CreateCategoryRequest, GetCategoriesRequest, CategoryResponse
 from app.services.category_service import get_categories, create_category
+from app.validation import validate_body, validate_query
 
 categories_bp = Blueprint('categories', __name__, url_prefix='/categories')
 
 @categories_bp.get('/get_categories')
 async def get():
-	data = request.get_json() or {}
-
-	user_id = data.get("user_id")
-
-	if not user_id:
-		raise BadRequestError("user_id is required")
-
-	categories = await get_categories(user_id)
-	return success_response({{
-		'name' : category.name,
-		'is_system': category.is_system
-	} for category in categories})
+	payload = await validate_query(GetCategoriesRequest)
+	categories = await get_categories(payload.user_id)
+	response = [CategoryResponse(
+		id=category.id,
+		name=category.name,
+		is_system=category.is_system,
+		user_id=category.user_id
+	).model_dump() for category in categories]
+	return success_response(response)
 
 
 
 @categories_bp.post('/create_category')
 async def create():
-	data = request.get_json() or {}
-
-	user_id = data.get("user_id")
-	name = data.get("name")
-
-	if not user_id or not name:
-		BadRequestError("user_id and name are required")
-
-	await create_category(user_id, name)
+	payload = validate_body(CreateCategoryRequest)
+	await create_category(payload.user_id, payload.name)
 	return success_response(status_code=HTTPStatus.CREATED)

@@ -3,35 +3,24 @@ from flask import Blueprint, request
 
 from app.exceptions import BadRequestError
 from app.responses import success_response
+from app.schemas.auth import RegisterRequest, UserResponse, LoginRequest
 from app.services.auth_service import register_user, login_user
+from app.validation import validate_body
 
 auth_bp = Blueprint('auth', __name__, url_prefix='/auth')
 
 
 @auth_bp.post('/register')
 async def register():
-	data = request.get_json() or {}
-
-	username = data.get("username")
-	email = data.get("email")
-	password = data.get("password")
-
-	if not username or not email or not password:
-		raise BadRequestError("username, email and password are required")
-
-	user = await register_user(username, email, password)
-	return success_response({'id': user.id}, status_code=HTTPStatus.CREATED)
+	payload = validate_body(RegisterRequest)
+	user = await register_user(payload.username, payload.email, payload.password)
+	response = UserResponse(id=user.id)
+	return success_response(response.model_dump(), status_code=HTTPStatus.CREATED)
 
 
 @auth_bp.post('/login')
 async def login():
-	data = request.get_json() or {}
-
-	email = data.get("email")
-	password = data.get("password")
-
-	if not email or not password:
-		raise BadRequestError("email and password are required")
-
-	user = await login_user(email, password)
-	return success_response({'id': user.id})
+	payload = validate_body(LoginRequest)
+	user = await login_user(payload.username, payload.password)
+	response = UserResponse(id=user.id)
+	return success_response(response.model_dump())

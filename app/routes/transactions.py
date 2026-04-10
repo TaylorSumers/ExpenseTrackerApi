@@ -1,59 +1,49 @@
 from http import HTTPStatus
-
+from decimal import Decimal
 from flask import Blueprint, request
 
 from app.exceptions import BadRequestError
 from app.responses import success_response
+from app.schemas.transactions import GetTransactionRequest, TransactionResponse, CreateTransactionRequest, \
+	DeleteTransactionRequest
 from app.services.transaction_service import get_transaction, create_transaction, delete_transaction
+from app.validation import validate_body
 
 transactions_bp = Blueprint('transactions', __name__, url_prefix='/transactions')
 
 
 @transactions_bp.get('/get_transaction')
 async def get():
-	data = request.get_json() or {}
-
-	transaction_id = data["transaction_id"]
-
-	if not transaction_id:
-		BadRequestError("transaction_id is required")
-
-	transaction = await get_transaction(transaction_id)
-	return success_response({
-		'category': transaction.category.name,
-		'amount': transaction.amount,
-		'type': transaction.type,
-		'description': transaction.description,
-		'executed_at': transaction.executed_at
-	})
+	payload = validate_body(GetTransactionRequest)
+	transaction = await get_transaction(payload.transaction_id)
+	response = TransactionResponse(
+		id=transaction.id,
+		category=transaction.category.name,
+		amount=Decimal(transaction.amount) / 100, # Перевод из копеек в рубли
+		type=transaction.type,
+		description=transaction.description,
+		executed_at=transaction.executed_at,
+		created_at=transaction.created_at
+	)
+	return success_response(response.model_dump())
 
 
 @transactions_bp.post('/create_transaction')
 async def create():
-	data = request.get_json() or {}
-
-	user_id = data['user_id']
-	category_id = data['category_id']
-	amount = data['amount']
-	type = data['type']
-	description = data['description']
-	executed_at = data['executed_at']
-
-	if not user_id or not amount or not type or not executed_at:
-		BadRequestError("user_id, amount, type and executed_at are required")
-
-	await create_transaction(user_id, category_id, amount, type, description, executed_at)
+	payload = validate_body(CreateTransactionRequest)
+	await create_transaction(
+		payload.user_id,
+		payload.category_id,
+		payload.amount,
+		payload.type,
+		payload.description,
+		payload.executed_at
+	)
 	return success_response(status_code=HTTPStatus.CREATED)
 
 
 @transactions_bp.delete('/delete_transaction')
 async def delete():
-	data = request.get_json() or {}
-
-	transaction_id = data['transaction_id']
-
-	if not transaction_id:
-		BadRequestError("transaction_id is required")
-
-	await delete_transaction(transaction_id)
+	payload = validate_body(DeleteTransactionRequest)
+	await delete_transaction(payload.transaction_id)
 	return success_response(status_code=HTTPStatus.NO_CONTENT)
