@@ -1,3 +1,5 @@
+from typing import Type
+
 from flask import request
 from pydantic import ValidationError
 
@@ -5,7 +7,7 @@ from app.exceptions import BadRequestError
 from app.schemas.base import RequestSchema
 
 
-def validate_body(schema_cls: RequestSchema):
+def validate_body(schema_cls: Type[RequestSchema]) -> RequestSchema:
 	raw_data = request.get_json(silent=True)
 	if raw_data is None:
 		return BadRequestError("Request body must be valid JSON")
@@ -16,7 +18,7 @@ def validate_body(schema_cls: RequestSchema):
 		raise BadRequestError(f"Validation error: {exc}") from exc
 
 
-def validate_query(schema_cls: RequestSchema):
+def validate_query(schema_cls: Type[RequestSchema]) -> RequestSchema:
 	raw_data = request.args.to_dict(flat=True)
 
 	try:
