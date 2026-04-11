@@ -1,13 +1,13 @@
 from sqlalchemy.exc import IntegrityError
 
 from app import ConflictError
-from app.database import session_factory
+from app.database import get_session_factory
 from app.exceptions import NotFoundError
 from app.models import Transaction
 
 
 async def get_transaction(transaction_id: int) -> Transaction:
-	async with session_factory() as session:
+	async with get_session_factory() as session:
 		transaction = await session.get(Transaction, transaction_id)
 		return transaction
 
@@ -22,13 +22,13 @@ async def create_transaction(user_id, category_id, amount, type, description, ex
 		executed_at = executed_at
 	)
 
-	async with session_factory() as session:
+	async with get_session_factory() as session:
 		session.add(transaction)
 		await session.commit()
 
 
 async def delete_transaction(transaction_id: int):
-	async with session_factory() as session:
+	async with get_session_factory() as session:
 		transaction = await session.get(Transaction, transaction_id)
 
 		if not transaction:

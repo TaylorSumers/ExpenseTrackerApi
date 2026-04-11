@@ -4,6 +4,7 @@ from werkzeug.exceptions import HTTPException
 import logging
 
 from app.config import settings
+from app.database import init_db
 from app.exceptions import ApiError, ConflictError
 from app.responses import error_response
 from app.routes.auth import auth_bp
@@ -12,12 +13,14 @@ from app.routes.categories import categories_bp
 from app.routes.transactions import transactions_bp
 
 
-def create_app() -> Flask:
+def create_app(test_config: dict | None = None) -> Flask:
 	app = Flask(__name__)
 	app.config['SECRET_KEY'] = settings.SECRET_KEY
 	app.config['DEBUG'] = settings.DEBUG
-	# app.config["JSON_AS_ASCII"] = False
 
+	if test_config:
+		app.config.update(test_config)
+	init_db(settings.database_url)
 	register_blueprints(app)
 	register_error_handlers(app)
 

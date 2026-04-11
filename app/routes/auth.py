@@ -1,7 +1,6 @@
 from http import HTTPStatus
-from flask import Blueprint, request
+from flask import Blueprint
 
-from app.exceptions import BadRequestError
 from app.responses import success_response
 from app.schemas.auth import RegisterRequest, UserResponse, LoginRequest
 from app.services.auth_service import register_user, login_user

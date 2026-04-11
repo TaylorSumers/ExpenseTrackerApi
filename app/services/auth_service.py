@@ -3,7 +3,7 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app.exceptions import ConflictError, UnauthorizedError
-from app.database import session_factory
+from app.database import get_session_factory
 from app.models import User
 
 
@@ -14,7 +14,7 @@ async def register_user(username: str, email: str, password: str) -> User:
 		password_hash=generate_password_hash(password)
 	)
 
-	async with session_factory() as session:
+	async with get_session_factory() as session:
 		session.add(user)
 		try:
 			await session.commit()
@@ -26,7 +26,7 @@ async def register_user(username: str, email: str, password: str) -> User:
 		return user
 
 async def login_user(email: str, password: str) -> User:
-	async with session_factory() as session:
+	async with get_session_factory() as session:
 		result = await session.execute(select(User).filter_by(email=email))
 		user = result.scalar_one_or_none()
 
