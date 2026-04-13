@@ -1,7 +1,10 @@
+from decimal import Decimal
+
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError
 
 from app import ConflictError
+from app.common.money import to_minor_units
 from app.database import get_session_factory
 from app.models import Budget
 
@@ -12,12 +15,12 @@ async def get_budgets(user_id: int, period: str) -> list[Budget]:
 		return budgets.scalars().all()
 
 
-async def create_budget(user_id: int, category_id: int, period: str, limit: int) -> None:
+async def create_budget(user_id: int, category_id: int, period: str, limit: Decimal) -> None:
 	budget = Budget(
 		user_id=user_id,
 		category_id=category_id,
 		period=period,
-		limit=limit
+		limit=to_minor_units(limit)
 	)
 	async with get_session_factory() as session:
 		session.add(budget)

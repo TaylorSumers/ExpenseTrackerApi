@@ -1,25 +1,24 @@
 from http import HTTPStatus
-from decimal import Decimal
-from flask import Blueprint, request
+from flask import Blueprint
 
-from app.exceptions import BadRequestError
+from app.common.money import from_minor_unites
 from app.responses import success_response
 from app.schemas.transactions import GetTransactionRequest, TransactionResponse, CreateTransactionRequest, \
 	DeleteTransactionRequest
 from app.services.transaction_service import get_transaction, create_transaction, delete_transaction
-from app.validation import validate_body
+from app.validation import validate_body, validate_query
 
 transactions_bp = Blueprint('transactions', __name__, url_prefix='/transactions')
 
 
 @transactions_bp.get('/get_transaction')
 async def get():
-	payload = validate_body(GetTransactionRequest)
+	payload = validate_query(GetTransactionRequest)
 	transaction = await get_transaction(payload.transaction_id)
 	response = TransactionResponse(
 		id=transaction.id,
-		category=transaction.category.name,
-		amount=Decimal(transaction.amount) / 100, # Перевод из копеек в рубли
+		category=transaction.category.name if transaction.category else None,
+		amount=from_minor_unites(transaction.amount),
 		type=transaction.type,
 		description=transaction.description,
 		executed_at=transaction.executed_at,

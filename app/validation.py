@@ -10,7 +10,7 @@ from app.schemas.base import RequestSchema
 def validate_body(schema_cls: Type[RequestSchema]) -> RequestSchema:
 	raw_data = request.get_json(silent=True)
 	if raw_data is None:
-		return BadRequestError("Request body must be valid JSON")
+		raise BadRequestError("Request body must be valid JSON")
 
 	try:
 		return schema_cls.model_validate(raw_data)

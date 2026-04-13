@@ -1,20 +1,22 @@
-from pydantic import Field, BaseModel
+from pydantic import Field
 from decimal import Decimal
 
+from app.schemas.base import RequestSchema, ResponseSchema
 
-class GetBudgetsRequest(BaseModel):
+
+class GetBudgetsRequest(RequestSchema):
 	user_id: int
 	period: str = Field(min_length=7, max_length=7, pattern=r"^\d{4}-\d{2}$")
 
 
-class CreateBudgetRequest(BaseModel):
+class CreateBudgetRequest(RequestSchema):
 	user_id: int
 	category_id: int
 	period: str = Field(min_length=7, max_length=7, pattern=r"^\d{4}-\d{2}$")
 	limit: Decimal = Field(gt = 0)
 
 
-class BudgetResponse(BaseModel):
+class BudgetResponse(ResponseSchema):
 	id: int
 	category: str
 	period: str

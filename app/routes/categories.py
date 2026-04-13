@@ -11,7 +11,7 @@ categories_bp = Blueprint('categories', __name__, url_prefix='/categories')
 
 @categories_bp.get('/get_categories')
 async def get():
-	payload = await validate_query(GetCategoriesRequest)
+	payload = validate_query(GetCategoriesRequest)
 	categories = await get_categories(payload.user_id)
 	response = [CategoryResponse(
 		id=category.id,

@@ -23,5 +23,5 @@ async def create_category(user_id: int, name: str) -> None:
 		try:
 			await session.commit()
 		except IntegrityError:
-			session.rollback()
+			await session.rollback()
 			raise ConflictError('User already has a category with such name')

@@ -31,7 +31,7 @@ class CreateTransactionRequest(RequestSchema):
 
 class TransactionResponse(ResponseSchema):
 	id: int
-	category: str
+	category: str | None
 	amount: Decimal
 	type: TransactionType
 	description: str | None

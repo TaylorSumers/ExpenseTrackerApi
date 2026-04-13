@@ -20,6 +20,6 @@ async def register():
 @auth_bp.post('/login')
 async def login():
 	payload = validate_body(LoginRequest)
-	user = await login_user(payload.username, payload.password)
+	user = await login_user(payload.email, payload.password)
 	response = UserResponse(id=user.id)
 	return success_response(response.model_dump())

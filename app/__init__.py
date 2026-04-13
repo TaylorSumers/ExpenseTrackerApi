@@ -15,14 +15,23 @@ from app.routes.transactions import transactions_bp
 
 def create_app(test_config: dict | None = None) -> Flask:
 	app = Flask(__name__)
-	app.config['SECRET_KEY'] = settings.SECRET_KEY
-	app.config['DEBUG'] = settings.DEBUG
+	app.config.from_mapping(
+		TESTING=False,
+		DEBUG=settings.DEBUG,
+		SECRET_KEY=settings.SECRET_KEY,
+		DATABASE_URL=settings.database_url,
+	)
 
 	if test_config:
 		app.config.update(test_config)
-	init_db(settings.database_url)
+
+	init_db(app.config['DATABASE_URL'])
 	register_blueprints(app)
 	register_error_handlers(app)
+
+	@app.get('/health')
+	async def healthcheck():
+		return {"status": "ok"}, 200
 
 	return app
 
