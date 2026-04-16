@@ -2,6 +2,7 @@ from http import HTTPStatus
 
 from flask import Blueprint
 
+from app.auth.decorators import auth_required, get_current_user
 from app.common.money import from_minor_unites
 from app.responses import success_response
 from app.schemas.budgets import GetBudgetsRequest, BudgetResponse, CreateBudgetRequest
@@ -12,9 +13,11 @@ budgets_bp = Blueprint('budgets', __name__, url_prefix='/budgets')
 
 
 @budgets_bp.get('/get_budgets')
+@auth_required
 async def get():
+	current_user = get_current_user()
 	payload = validate_query(GetBudgetsRequest)
-	budgets = await get_budgets(payload.user_id, payload.period)
+	budgets = await get_budgets(current_user.id, payload.period)
 	response = [BudgetResponse(
 		id=budget.id,
 		category=budget.category.name,
@@ -25,7 +28,9 @@ async def get():
 
 
 @budgets_bp.post('/create_budget')
+@auth_required
 async def create():
+	current_user = get_current_user()
 	payload = validate_body(CreateBudgetRequest)
-	await create_budget(payload.user_id, payload.category_id, payload.period, payload.limit)
+	await create_budget(current_user.id, payload.category_id, payload.period, payload.limit)
 	return success_response(status_code=HTTPStatus.CREATED)

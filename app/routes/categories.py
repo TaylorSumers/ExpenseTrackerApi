@@ -1,18 +1,19 @@
 from http import HTTPStatus
 from flask import Blueprint
 
-from app.exceptions import BadRequestError
+from app.auth.decorators import get_current_user, auth_required
 from app.responses import success_response
-from app.schemas.categories import CreateCategoryRequest, GetCategoriesRequest, CategoryResponse
+from app.schemas.categories import CreateCategoryRequest, CategoryResponse
 from app.services.category_service import get_categories, create_category
-from app.validation import validate_body, validate_query
+from app.validation import validate_body
 
 categories_bp = Blueprint('categories', __name__, url_prefix='/categories')
 
 @categories_bp.get('/get_categories')
+@auth_required
 async def get():
-	payload = validate_query(GetCategoriesRequest)
-	categories = await get_categories(payload.user_id)
+	current_user = get_current_user()
+	categories = await get_categories(current_user.id)
 	response = [CategoryResponse(
 		id=category.id,
 		name=category.name,
@@ -24,7 +25,9 @@ async def get():
 
 
 @categories_bp.post('/create_category')
+@auth_required
 async def create():
+	current_user = get_current_user()
 	payload = validate_body(CreateCategoryRequest)
-	await create_category(payload.user_id, payload.name)
+	await create_category(current_user.id, payload.name)
 	return success_response(status_code=HTTPStatus.CREATED)

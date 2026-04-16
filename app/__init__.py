@@ -18,7 +18,7 @@ def create_app(test_config: dict | None = None) -> Flask:
 	app.config.from_mapping(
 		TESTING=False,
 		DEBUG=settings.DEBUG,
-		SECRET_KEY=settings.SECRET_KEY,
+		JWT_SECRET_KEY=settings.JWT_SECRET_KEY,
 		DATABASE_URL=settings.database_url,
 	)
 

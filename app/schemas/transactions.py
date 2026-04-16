@@ -21,7 +21,6 @@ class DeleteTransactionRequest(RequestSchema):
 
 
 class CreateTransactionRequest(RequestSchema):
-	user_id: int
 	category_id: int
 	amount: Decimal = Field(gt=0, max_digits=12, decimal_places=2)
 	type: TransactionType

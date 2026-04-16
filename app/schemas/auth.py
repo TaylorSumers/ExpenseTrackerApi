@@ -12,5 +12,6 @@ class LoginRequest(RequestSchema):
 	email: EmailStr
 	password: str = Field(min_length=8, max_length=128)
 
-class UserResponse(ResponseSchema):
-	id: int
+class TokenResponse(ResponseSchema):
+	access_token: str
+	token_type: str = "Bearer"

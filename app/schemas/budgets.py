@@ -5,12 +5,10 @@ from app.schemas.base import RequestSchema, ResponseSchema
 
 
 class GetBudgetsRequest(RequestSchema):
-	user_id: int
 	period: str = Field(min_length=7, max_length=7, pattern=r"^\d{4}-\d{2}$")
 
 
 class CreateBudgetRequest(RequestSchema):
-	user_id: int
 	category_id: int
 	period: str = Field(min_length=7, max_length=7, pattern=r"^\d{4}-\d{2}$")
 	limit: Decimal = Field(gt = 0)
