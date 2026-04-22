@@ -3,7 +3,7 @@ from functools import wraps
 from flask import g, request
 
 from app.auth.tokens import decode_access_token
-from app.database import get_session_factory
+from app.database import get_session
 from app.exceptions import UnauthorizedError
 from app.models import User
 
@@ -27,7 +27,7 @@ def auth_required(view):
 		payload = decode_access_token(token)
 		user_id = int(payload['sub'])
 
-		async with get_session_factory() as session:
+		async with get_session() as session:
 			user = await session.get(User, user_id)
 
 		if user is None:

@@ -4,13 +4,13 @@ from datetime import datetime
 from sqlalchemy import select
 
 from app.common.money import to_minor_units
-from app.database import get_session_factory
+from app.database import get_session
 from app.exceptions import NotFoundError
 from app.models import Transaction, Category
 
 
 async def get_transaction(transaction_id: int, user_id: int) -> Transaction:
-	async with get_session_factory() as session:
+	async with get_session() as session:
 		transaction = await session.execute(select(Transaction).filter_by(id=transaction_id, user_id=user_id))
 
 		if not transaction:
@@ -35,7 +35,7 @@ async def create_transaction(
 		executed_at=executed_at
 	)
 
-	async with get_session_factory() as session:
+	async with get_session() as session:
 		category = await session.get(Category, category_id)
 		if category is None or (not category.is_system and category.user_id != user_id):
 			raise NotFoundError('Category not found')
@@ -45,11 +45,11 @@ async def create_transaction(
 
 
 async def delete_transaction(transaction_id: int, user_id: int):
-	async with get_session_factory() as session:
+	async with get_session() as session:
 		transaction = await session.execute(select(Transaction).filter_by(id=transaction_id, user_id=user_id))
 
 		if not transaction:
 			raise NotFoundError('Transaction not found')
 
-		session.delete(transaction)
+		await session.delete(transaction)
 		await session.commit()
